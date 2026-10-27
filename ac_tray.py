@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (QApplication, QGraphicsDropShadowEffect, QHBoxLayou
                              QPushButton, QSystemTrayIcon, QVBoxLayout, QWidget)
 
 from ac_core import AC, BASE, MODES, TEMP_MAX, TEMP_MIN
+from alarm_ui import AlarmPage
 from cameras_ui import CamPage
 
 BLUE = QColor("#4cc2ff")
@@ -386,6 +387,9 @@ class Popup(QWidget):
         self.cams = CamPage()
         self.cams.setVisible(False)
         outer.addWidget(self.cams)
+        self.alarm = AlarmPage()
+        self.alarm.setVisible(False)
+        outer.addWidget(self.alarm)
         self.tab = 0
 
         head = QHBoxLayout()
@@ -487,12 +491,13 @@ class Popup(QWidget):
         self.refresh()
         # invariant: a aba de câmeras tem sempre a mesma altura da aba Clima
         self.cams.setFixedHeight(self.clima.sizeHint().height())
+        self.alarm.setFixedHeight(self.clima.sizeHint().height())
 
     def _tab_bar(self):
         bar = QHBoxLayout()
         bar.setSpacing(8)
         self.tab_btns = []
-        for i, name in enumerate(("Clima", "Câmeras")):
+        for i, name in enumerate(("Clima", "Câmeras", "Alarme")):
             b = QPushButton(name)
             b.setCheckable(True)
             b.setChecked(i == 0)
@@ -513,6 +518,7 @@ class Popup(QWidget):
             b.setChecked(n == i)
         self.clima.setVisible(i == 0)
         self.cams.setVisible(i == 1)
+        self.alarm.setVisible(i == 2)
         self._sync_streams()
         self.adjustSize()
         self._anchor()
@@ -655,12 +661,13 @@ def main():
     ctl = Controller()
     popup = Popup(ctl)
     tray = QSystemTrayIcon(tray_icon(), app)
-    tray.setToolTip("Ar-condicionado")
+    tray.setToolTip("Casa")
     menu = QMenu()
     open_act = QAction("Abrir", menu)
     open_act.triggered.connect(popup.toggle_near_tray)
     quit_act = QAction("Sair", menu)
     quit_act.triggered.connect(app.quit)
+    app.aboutToQuit.connect(popup.alarm.shutdown)
     menu.addAction(open_act)
     menu.addAction(quit_act)
     tray.setContextMenu(menu)
