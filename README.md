@@ -1,6 +1,6 @@
-# ac-control
+# casa-hub
 
-App de bandeja do Windows (PyQt6) para controlar um split Consul (CBN09BBBNA) por um
+Hub de bandeja do Windows (PyQt6) para a casa: controla um split Consul (CBN09BBBNA) por um
 emissor IR Tuya/Smart Life, e ver câmeras ICSee/XMEye numa segunda aba.
 
 - **Clima:** temperatura (18–32 °C), modo, ventilador, turbo, dormir, oscilação, visor e liga/desliga.
