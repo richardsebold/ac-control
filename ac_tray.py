@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (QApplication, QGraphicsDropShadowEffect, QHBoxLayou
 
 from ac_core import AC, BASE, MODES, TEMP_MAX, TEMP_MIN
 from alarm_ui import AlarmPage
+from watch_ui import Vigia
 from cameras_ui import CamPage
 
 BLUE = QColor("#4cc2ff")
@@ -669,7 +670,9 @@ def main():
     quit_act.triggered.connect(app.quit)
     app.aboutToQuit.connect(popup.alarm.shutdown)
     menu.addAction(open_act)
+    vigia = Vigia(tray, menu)
     menu.addAction(quit_act)
+    app.aboutToQuit.connect(vigia.stop)
     tray.setContextMenu(menu)
     tray.activated.connect(lambda r: popup.toggle_near_tray()
                            if r == QSystemTrayIcon.ActivationReason.Trigger else None)

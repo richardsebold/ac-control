@@ -55,3 +55,24 @@ O comando de armar/desarmar não pede senha. Quem alcançar a porta a partir do 
 então use IP fixo para a central e não exponha a porta na internet.
 
 Testes do protocolo (central simulada): `python -m unittest discover -s tests`.
+
+## Vigia de câmeras (veículo ou pessoa parada)
+
+Avisa no PC quando um veículo ou pessoa **fica parado** dentro de uma zona que você desenha (por exemplo,
+a frente do portão). Roda local: lê o substream `camN_sub` do go2rtc, detecta com YOLO11n (ONNX, DirectML
+na placa de vídeo, com CPU de reserva) e não manda imagem para fora.
+
+1. `pip install -r requirements.txt` (traz onnxruntime, opencv e numpy).
+2. Gere o modelo uma vez, num venv separado (traz o torch): `pip install ultralytics onnx onnxslim` e
+   `python gen_model.py`. Ele grava `models/yolo11n.onnx` (fora do Git).
+3. Na bandeja, clique direito → **Zonas do vigia…**: escolha a câmera, **Nova zona**, clique nos cantos
+   (botão direito desfaz o último), **Concluir zona**; defina o nome, os segundos parado e veículos/pessoas.
+4. Clique direito → marque **Vigia de câmeras**. Use **Testar alerta** para conferir som e notificação.
+
+- O alerta sai uma vez por parada, depois de `segundos` sem se mexer na zona. Quem já estava parado
+  quando o vigia ligou (carro estacionado) é ignorado até sair.
+- Clique na notificação para abrir a câmera ao vivo. O quadro do alerta, com a caixa, fica em `alertas/`
+  (os 50 últimos).
+- Se as notificações do Windows não aparecerem, o modo Não Perturbe/Assistente de Foco pode estar ligado;
+  o som toca de qualquer forma.
+- Os testes da lógica de zonas: `python -m unittest discover -s tests`.
