@@ -1,0 +1,13 @@
+﻿.venv/
+__pycache__/
+devices.json
+snapshot.json
+tinytuya.json
+tuya-raw.json
+codes.json
+.tlc/
+*.key
+state.json
+ac_tray.lock
+cameras.json
+go2rtc/
