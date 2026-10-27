@@ -69,17 +69,24 @@ class Vigia(QObject):
         self.alerted.emit(alert, str(save_alert_frame(alert, frame)))
 
     def test_alert(self):
-        key = next(iter(self.cams), "cam1")
-        self._show(Alert(key, "Teste", "vehicle", 5, (0, 0, 1, 1), 0), "")
+        # why: o teste deve mostrar a câmera e a zona que o vigia realmente usa, não a primeira da lista
+        cams = load_zones()["cameras"]
+        key, zone = next(((k, v["zones"][0]["name"]) for k, v in cams.items() if v.get("zones")),
+                         (next(iter(self.cams), "cam1"), "nenhuma zona definida"))
+        self._show(Alert(key, zone, "vehicle", 0, (0, 0, 1, 1), 0), "", test=True)
 
-    def _show(self, alert, _path):
+    def _show(self, alert, _path, test=False):
         from watch_runner import KIND_LABEL
         winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
         self.last = alert.camera
         name = self.cams.get(alert.camera, {}).get("name", alert.camera)
-        self.tray.showMessage(f"{name}: {alert.zone}",
-                              f"{KIND_LABEL[alert.kind]} parado há {int(alert.seconds)} s. Clique para ver ao vivo.",
-                              QSystemTrayIcon.MessageIcon.Warning, 20000)
+        if test:
+            title = f"TESTE · {name}: {alert.zone}"
+            text = "Isto é só um teste; nenhum veículo foi detectado. Clique para ver a câmera ao vivo."
+        else:
+            title = f"{name}: {alert.zone}"
+            text = f"{KIND_LABEL[alert.kind]} parado há {int(alert.seconds)} s. Clique para ver ao vivo."
+        self.tray.showMessage(title, text, QSystemTrayIcon.MessageIcon.Warning, 20000)
 
     def _open_live(self):
         cam = self.cams.get(self.last)
