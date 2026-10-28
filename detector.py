@@ -1,3 +1,5 @@
+import threading
+
 import cv2
 import numpy as np
 import onnxruntime as ort
@@ -27,6 +29,8 @@ class Detector:
                     raise
         self.provider = self.session.get_providers()[0]
         self.input = self.session.get_inputs()[0].name
+        # invariant: o DirectML não aceita dois Run simultâneos na mesma sessão (crash nativo que derruba o app)
+        self._run_lock = threading.Lock()
 
     def detect(self, bgr):
         h, w = bgr.shape[:2]
@@ -36,7 +40,8 @@ class Detector:
         top, left = (SIZE - nh) // 2, (SIZE - nw) // 2
         canvas[top:top + nh, left:left + nw] = cv2.resize(bgr, (nw, nh))
         blob = canvas[:, :, ::-1].transpose(2, 0, 1)[None].astype(np.float32) / 255.0
-        out = self.session.run(None, {self.input: blob})[0][0].T  # (N, 4 + classes)
+        with self._run_lock:
+            out = self.session.run(None, {self.input: blob})[0][0].T  # (N, 4 + classes)
         scores = out[:, 4:][:, CLASS_IDS]
         best = scores.argmax(1)
         conf = scores[np.arange(len(scores)), best]
